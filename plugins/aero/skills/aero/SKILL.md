@@ -109,6 +109,22 @@ If native rendering is unavailable, give a concise text answer with the same dec
 For development, run the Python contract suite and the locked React/browser tests documented in the plugin README. The browser smoke verifies all eight kinds through the pinned parser and renderer with a fake SDK bridge. The earlier five-kind baseline had a separately authorized live wizard smoke; the three new kinds have not been tested with a live provider. A live host/provider smoke requires explicit access to the intended host, emits a real chat turn and is separate from CI. Do not turn test fixtures or an old run into a claim about the current installed system.
 
 
+## Product lists (2 or more products): native listing block
+
+When the answer is a list or comparison of two or more products, emit ONE fenced `listing` block holding a JSON array instead of `visualcards`. The host draws its own product row and detail dialog (large image, thumbnails, price, specs, pros, catches, source links) from it. This rule takes precedence over the `visualcards` paragraphs below for products. Places and a single product keep `visualcard`/`visualcards`.
+
+Every object needs `"kind":"product"` and `title`. Optional: `price`, `facts` (list), `pros` (list), `catches` (list), `note`, `images` (https URLs), `links` (`{"label","url"}`). Use a field only when you have grounded data for it; omit it otherwise. Never invent photos, prices, pros or links, and never use placeholder URLs. Images and links come from tool results or the user. Up to 24 products, each text value at most 400 characters. No total character cap applies to the block; the 2048 cap below applies to directives only. An item without a real image still belongs in the array (omit `images`). Do not repeat per-item details in prose after the block: give a short conclusion and a source list.
+
+Price headline: `price` is a short headline only, at most about 40 characters. Give an exact figure only when the cited source states that exact figure for that exact model; otherwise use a truthful from-price or range with currency (for example "Mulai Rp2.100.000" or "Rp1,8-2,3 jt"). Put seller type (official or marketplace), snapshot date, shipping or tax caveats and any over-budget note in `note`, not in `price`. Do not round, convert or invent precision to make the headline shorter.
+
+Sources: keep every source as a `links` entry (`label` = site name, `url` = the page) so the card dialog shows working source chips, and keep the closing source list. Do not paste numbered markers such as [1] into `price`, `facts`, `pros`, `catches` or `note`; the link chips carry attribution. Never delete a source to shorten a value.
+
+```listing
+[{"kind":"product","title":"Example Headphone A","price":"Rp585.000","facts":["Over-ear, ANC","40 hour battery"],"pros":["Light"],"catches":["Single microphone"],"note":"Price checked on the cited page.","images":["https://images.example.org/a-1.jpg"],"links":[{"label":"Source","url":"https://shop.example.org/a"}]}]
+```
+
+The `example.org` URLs above are placeholders for this document only.
+
 ## Product/place media cards
 
 The same Aero renderer additionally claims `visualcard` and `visualcards`. These do not change the existing `ui` kinds. Prefer the table kind or short text when grounded image/source data is missing. Do not invent photos, prices, hours, availability or a map.
@@ -121,6 +137,6 @@ One `visualcard` on its own line, note the directive name is `visualcard` itself
 
 The `example.com` URLs in that example are documentation placeholders. Never emit placeholder or invented URLs in an answer; without a grounded source or image URL from a tool result or the user, use the table kind or short text instead of a `visualcard`.
 
-Use `visualcards` for1-5peer cards by prefixing every attribute a_, b_, c_, d_, e_. Total directive attributes must remain within2000characters. Values are plain text, never code. Keep each directive on its own line, without braces/newlines inside values. Photo click opens only the image/source viewer; titles remain text. The row scrolls horizontally on small screens. No purchase, reservation, map API, video generation, download or arbitrary HTML is supplied by these directives.
+For places, or a single product, use `visualcards` for 1-5 peer cards by prefixing every attribute a_, b_, c_, d_, e_. Total directive attributes must remain within2000characters. Values are plain text, never code. Keep each directive on its own line, without braces/newlines inside values. Photo click opens only the image/source viewer; titles remain text. The row scrolls horizontally on small screens. No purchase, reservation, map API, video generation, download or arbitrary HTML is supplied by these directives.
 
 The photo path has manual-fixture tests, not fresh live-model selection proof. It does not authorize a model/provider switch or paid call. Native maps remain blocked until net-zero billing with no PAYG is proven and approved. Never substitute another map provider silently.
